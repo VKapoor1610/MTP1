@@ -15,7 +15,7 @@ params:
   monitor: val/loss_simple_ema
   scale_factor: 0.18215
   use_ema: False
-  sync_path: ./weight/emapruned.ckpt #  path to the StableDiffusion v 2.1 weights
+  sync_path: ./MTP1/weight/emapruned.ckpt #  path to the StableDiffusion v 2.1 weights
   synch_control: true
   ckpt_path_pre: ~
   
