@@ -87,7 +87,7 @@ def parse_args() -> Namespace:
     parser = ArgumentParser()
     
     # TODO: add help info for these options
-    parser.add_argument("--ckpt_sd", default='./weight/v2-1_512-ema-pruned.ckpt', type=str, help="checkpoint path of stable diffusion")
+    parser.add_argument("--ckpt_sd", default='./weight/emapruned.ckpt', type=str, help="checkpoint path of stable diffusion")
     parser.add_argument("--ckpt_lc", default='path to checkpoint file of lfgcm and control module', type=str, help="checkpoint path of lfgcm and control module")
     parser.add_argument("--config", default='configs/model/diffeic.yaml', type=str, help="model config path")
     
