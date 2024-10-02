@@ -2,7 +2,7 @@ dataset:
   target: dataset.licdataset.LICDataset
   params:
     # Path to the file list.
-    file_list: ./datalists/valid.list
+    file_list: /kaggle/working/file_lists/valid.list
     out_size: 512
     crop_type: none
     use_hflip: False
