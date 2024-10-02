@@ -14,20 +14,30 @@ model:
 lightning:
   seed: 231
   
+  # trainer:
+  #   accelerator: ddp
+  #   precision: 32
+  #   # Indices of GPUs used for training.
+  #   gpus: [0]
+  #   # Path to save logs and checkpoints.
+  #   default_root_dir: ./logs/1_2_1
+  #   # Max number of training steps (batches).
+  #   max_steps: 300001
+  #   # Validation frequency in terms of training steps.
+  #   val_check_interval: 1
+  #   log_every_n_steps: 100
+  #   # Accumulate gradients from multiple batches so as to increase batch size.
+  #   accumulate_grad_batches: 1
+
   trainer:
-    accelerator: ddp
-    precision: 32
-    # Indices of GPUs used for training.
-    gpus: [0]
-    # Path to save logs and checkpoints.
-    default_root_dir: ./logs/1_2_1
-    # Max number of training steps (batches).
-    max_steps: 300001
-    # Validation frequency in terms of training steps.
-    val_check_interval: 1
-    log_every_n_steps: 100
-    # Accumulate gradients from multiple batches so as to increase batch size.
-    accumulate_grad_batches: 1
+    accelerator: gpu  # Use 'gpu' instead of 'ddp' for single GPU training
+    precision: 16  # Enable mixed precision (16-bit) training to reduce memory usage
+    gpus: [0]  # Keep GPU 0 for training
+    default_root_dir: ./logs/1_2_1  # Path to save logs and checkpoints
+    max_steps: 300001  # Max number of training steps
+    val_check_interval: 1.0  # Validate after every epoch (adjust if you prefer validation frequency by batches)
+    log_every_n_steps: 100  # Log every 100 steps
+    accumulate_grad_batches: 1  # Gradient accumulation, no changes needed her
   
   callbacks:
     - target: model.callbacks.ImageLogger
