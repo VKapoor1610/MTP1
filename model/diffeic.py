@@ -825,15 +825,42 @@ class DiffEIC(LatentDiffusion):
         
         return out
     
-    def validation_epoch_end(self, outputs: EPOCH_OUTPUT):
-        outputs = np.array(outputs)
-        avg_out = sum(outputs)/len(outputs)
-        self.log("avg_bpp", avg_out[0],
-                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
+    # def validation_epoch_end(self, outputs: EPOCH_OUTPUT):
+    #     outputs = np.array(outputs)
+    #     avg_out = sum(outputs)/len(outputs)
+    #     self.log("avg_bpp", avg_out[0],
+    #                 prog_bar=True, logger=True, on_step=False, on_epoch=True)
         
-        for i, (name, _) in enumerate(self.calculate_metrics.items()):
-            self.log(f"avg_{name}", avg_out[i+1],
-                    prog_bar=True, logger=True, on_step=False, on_epoch=True)
+    #     for i, (name, _) in enumerate(self.calculate_metrics.items()):
+    #         self.log(f"avg_{name}", avg_out[i+1],
+    #                 prog_bar=True, logger=True, on_step=False, on_epoch=True)
+
+    def validation_epoch_end(self, outputs: EPOCH_OUTPUT):
+        # Collect the individual metrics/losses from outputs
+        avg_metrics = []
+        avg_bpp_values = []
+    
+        for output in outputs:
+            # Ensure each output contains the necessary data
+            if isinstance(output, dict):
+                avg_bpp_values.append(output.get('bpp', 0))  # Assume 'bpp' is a key in each output
+                metrics = [output.get(metric_name, 0) for metric_name, _ in self.calculate_metrics.items()]
+                avg_metrics.append(metrics)
+        
+        # Calculate averages for bpp and metrics
+        if avg_bpp_values:
+            avg_bpp = sum(avg_bpp_values) / len(avg_bpp_values)
+            self.log("avg_bpp", avg_bpp, prog_bar=True, logger=True, on_step=False, on_epoch=True)
+    
+        if avg_metrics:
+            # Convert avg_metrics into a NumPy array for easier manipulation
+            avg_metrics = np.mean(avg_metrics, axis=0)  # Compute the mean across all outputs
+    
+            # Log each metric
+            for i, (name, _) in enumerate(self.calculate_metrics.items()):
+                self.log(f"avg_{name}", avg_metrics[i],
+                         prog_bar=True, logger=True, on_step=False, on_epoch=True)
+
         
     def load_preprocess_ckpt(self, ckpt_path_pre):
         ckpt = torch.load(ckpt_path_pre)
