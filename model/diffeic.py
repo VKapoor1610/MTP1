@@ -755,9 +755,10 @@ class DiffEIC(LatentDiffusion):
 
         loss = self.l_simple_weight * loss.mean()
         
+        # Update for loss function in 
         mssimLoss = MSSSIMLoss()
-        # loss_mssim = mssimLoss(model_output, x_noisy)
-        # update for loss + = loss_ssim 
+        loss_mssim = mssimLoss(model_output, x_noisy)
+        loss += loss_mssim 
 
         loss_bpp = cond['bpp']
         guide_bpp = cond['q_bpp']
