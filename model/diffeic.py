@@ -12,7 +12,7 @@ import einops
 import numpy as np
 from pytorch_lightning.utilities.types import EPOCH_OUTPUT
 from utils.utils import *
-import mutli_scale_ssim
+from .mutli_scale_ssim import MSSSIMLoss
 
 from ldm.modules.diffusionmodules.util import (
     conv_nd,
@@ -755,7 +755,7 @@ class DiffEIC(LatentDiffusion):
 
         loss = self.l_simple_weight * loss.mean()
         
-        mssimLoss = mutli_scale_ssim.MSSSIMLoss() 
+        mssimLoss = MSSSIMLoss()
         # loss_mssim = mssimLoss(model_output, x_noisy)
         # update for loss + = loss_ssim 
 
