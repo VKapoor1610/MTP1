@@ -142,13 +142,13 @@ class MSSSIMLoss(nn.Module):
         else:
             return ssim_map.mean([1, 2, 3])
 
-    def ms_ssim(self, X, Y):
+    def ms_ssim(self, X, Y, window):
         # Create a list to hold SSIM values at each scale
         msssim_vals = []
 
         # Apply SSIM at each scale, progressively downsampling
         for weight in self.weights[:-1]:
-            ssim_val = self.ssim(X, Y, self.window, self.window_size, self.size_average)
+            ssim_val = self.ssim(X, Y, window, self.window_size, self.size_average)
             msssim_vals.append(ssim_val ** weight)
 
             # Downsample images by 2
@@ -156,13 +156,13 @@ class MSSSIMLoss(nn.Module):
             Y = F.avg_pool2d(Y, kernel_size=2)
 
         # Compute SSIM at the final scale (no downsampling here)
-        ssim_val = self.ssim(X, Y, self.window, self.window_size, self.size_average)
+        ssim_val = self.ssim(X, Y, window, self.window_size, self.size_average)
         msssim_vals.append(ssim_val ** self.weights[-1])
 
         # Return the product of SSIM values across all scales
         return torch.prod(torch.stack(msssim_vals))
 
     def forward(self, X, Y):
-        # Ensure the window has the same type and number of channels as the input
+        # Create the window dynamically in the forward pass
         window = self.create_window(self.window_size, X.shape[1]).type_as(X)
-        return 1 - self.ms_ssim(X, Y)
+        return 1 - self.ms_ssim(X, Y, window)
