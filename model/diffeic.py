@@ -757,6 +757,7 @@ class DiffEIC(LatentDiffusion):
         
         # Update for loss function in 
         mssimLoss = MSSSIMLoss()
+        # print("")
         loss_mssim = mssimLoss(model_output, x_noisy)
         loss += loss_mssim 
 
