@@ -763,10 +763,10 @@ class DiffEIC(LatentDiffusion):
         loss_mssim = mssimLoss(model_output, x_noisy)
         loss += loss_mssim 
         
-        print(model_output.shape, x_noisy.shape)
+        #print(model_output.shape, x_noisy.shape)
 
         lpips_loss_function = lpips.LPIPS(net='alex')
-        lpips_loss = lpips_loss_function(model_output , x_noisy)
+        lpips_loss = lpips_loss_function(model_output[:, :3, :, :], x_noisy[:, :3, :, :])
         loss += lpips_loss
         
         loss_bpp = cond['bpp']
