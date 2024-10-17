@@ -783,8 +783,8 @@ class DiffEIC(LatentDiffusion):
         # lpips_loss = lpips_loss_function(model_output[:, :3, :, :], x_noisy[:, :3, :, :])
         print(lpips_loss.shape)
         print(loss.shape)
-        lpips_loss = lpips_loss.unsqueeze(0).expand(4, 1, 1, 1)  # Expand the scalar to match the shape of loss
-        loss += lpips_loss
+        lpips_loss_expanded = lpips_loss.expand(4, 1, 1, 1)
+        loss += lpips_loss_expanded
         
         loss_bpp = cond['bpp']
         guide_bpp = cond['q_bpp']
