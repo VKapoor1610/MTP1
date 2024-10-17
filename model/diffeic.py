@@ -785,13 +785,10 @@ class DiffEIC(LatentDiffusion):
         print(loss.shape)
         
         # Unsqueeze the scalar to make it 4D
-        lpips_loss_expanded = lpips_loss.unsqueeze(0).unsqueeze(0).unsqueeze(0).unsqueeze(0)  # shape: [1, 1, 1, 1]
-        
-        # Now expand to match the shape of loss
-        lpips_loss_expanded = lpips_loss_expanded.expand(4, 1, 1, 1)  # shape: [4, 1, 1, 1]
-        
-        # Add the tensors
-        loss += lpips_loss_expanded
+        lpips_loss_reduced = lpips_loss.sum()  # or use .mean() if you prefer averaging
+
+        # Add the reduced lpips_loss to the scalar loss
+        loss += lpips_loss_reduced
         
         loss_bpp = cond['bpp']
         guide_bpp = cond['q_bpp']
