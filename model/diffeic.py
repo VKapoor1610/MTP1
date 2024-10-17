@@ -761,7 +761,7 @@ class DiffEIC(LatentDiffusion):
         mssimLoss = MSSSIMLoss()
         # print("")
         loss_mssim = mssimLoss(model_output, x_noisy)
-        loss += loss_mssim 
+        loss += 0.1*loss_mssim 
         
         #print(model_output.shape, x_noisy.shape)
 
@@ -785,10 +785,10 @@ class DiffEIC(LatentDiffusion):
         print(loss.shape)
         
         # Unsqueeze the scalar to make it 4D
-        lpips_loss_reduced = lpips_loss.sum()  # or use .mean() if you prefer averaging
+        lpips_loss_reduced = lpips_loss.mean()  # or use .mean() if you prefer averaging
 
         # Add the reduced lpips_loss to the scalar loss
-        loss += lpips_loss_reduced
+        loss += 0.1*lpips_loss_reduced
         
         loss_bpp = cond['bpp']
         guide_bpp = cond['q_bpp']
