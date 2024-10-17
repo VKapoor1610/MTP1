@@ -2,6 +2,8 @@ import time
 import torch
 import torch as th
 import torch.nn as nn
+import lpips
+from PIL import Image
 
 from typing import Dict, Mapping, Any
 
@@ -761,6 +763,10 @@ class DiffEIC(LatentDiffusion):
         loss_mssim = mssimLoss(model_output, x_noisy)
         loss += loss_mssim 
 
+        lpips_loss_function = lpips.LPIPS(net='alex')
+        lpips_loss = lpips_loss_function(model_output , x_noisy)
+        loss += lpips_loss
+        
         loss_bpp = cond['bpp']
         guide_bpp = cond['q_bpp']
         loss_dict.update({f'{prefix}/l_bpp': loss_bpp.mean()})
