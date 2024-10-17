@@ -781,6 +781,9 @@ class DiffEIC(LatentDiffusion):
 
         # lpips_loss_function = lpips.LPIPS(net='alex')
         # lpips_loss = lpips_loss_function(model_output[:, :3, :, :], x_noisy[:, :3, :, :])
+        print(lpips_loss)
+        print(loss)
+        lpips_loss = lpips_loss.view(-1, 1, 1, 1)  # Expand scalar to match shape [4, 1, 1, 1]
         loss += lpips_loss
         
         loss_bpp = cond['bpp']
