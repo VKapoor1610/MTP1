@@ -765,8 +765,22 @@ class DiffEIC(LatentDiffusion):
         
         #print(model_output.shape, x_noisy.shape)
 
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # Move tensors to the same device
+        model_output = model_output.to(device)
+        x_noisy = x_noisy.to(device)
+        
+        # Ensure LPIPS loss function is on the same device
         lpips_loss_function = lpips.LPIPS(net='alex')
+        lpips_loss_function = lpips_loss_function.to(device)
+        
+        # Compute LPIPS loss
         lpips_loss = lpips_loss_function(model_output[:, :3, :, :], x_noisy[:, :3, :, :])
+
+
+        # lpips_loss_function = lpips.LPIPS(net='alex')
+        # lpips_loss = lpips_loss_function(model_output[:, :3, :, :], x_noisy[:, :3, :, :])
         loss += lpips_loss
         
         loss_bpp = cond['bpp']
