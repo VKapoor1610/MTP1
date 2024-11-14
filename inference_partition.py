@@ -1,15 +1,14 @@
-from typing import List, Tuple, Optional
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-from argparse import ArgumentParser, Namespace
-
 import numpy as np
 import torch
 import einops
 import pytorch_lightning as pl
 from PIL import Image
+from skimage.metrics import peak_signal_noise_ratio as psnr
 from omegaconf import OmegaConf
 
+# pip install dists-pytorch
+from DISTS_pytorch import DISTS
 from ldm.xformers_state import disable_xformers
 from model.spaced_sampler import SpacedSampler
 from model.ddim_sampler import DDIMSampler
@@ -18,6 +17,11 @@ from utils.image import pad
 from utils.common import instantiate_from_config, load_state_dict
 from utils.file import list_image_files, get_file_name_parts
 
+# Function to calculate PSNR between two images
+def calculate_psnr(original, reconstructed):
+    original = original / 255.0  # Convert to [0, 1] range
+    reconstructed = reconstructed / 255.0  # Convert to [0, 1] range
+    return psnr(original, reconstructed, data_range=1.0)  # PSNR between 0 and 1 range
 
 @torch.no_grad()
 def process(
@@ -27,20 +31,6 @@ def process(
     steps: int,
     stream_path: str
 ) -> Tuple[List[np.ndarray], float]:
-    """
-    Apply DiffEIC model on a list of images.
-    
-    Args:
-        model (DiffEIC): Model.
-        imgs (List[np.ndarray]): A list of images (HWC, RGB, range in [0, 255])
-        sampler (str): Sampler name.
-        steps (int): Sampling steps.
-        stream_path (str): Savedir of bitstream
-    
-    Returns:
-        preds (List[np.ndarray]): Restoration results (HWC, RGB, range in [0, 255]).
-        bpp
-    """
     n_samples = len(imgs)
     if sampler == "ddpm":
         sampler = SpacedSampler(model, var_type="fixed_small")
@@ -85,21 +75,15 @@ def process(
 
 def parse_args() -> Namespace:
     parser = ArgumentParser()
-    
-    # TODO: add help info for these options
     parser.add_argument("--ckpt_sd", default='./MTP1/weight/emapruned.ckpt', type=str, help="checkpoint path of stable diffusion")
     parser.add_argument("--ckpt_lc", default='path to checkpoint file of lfgcm and control module', type=str, help="checkpoint path of lfgcm and control module")
     parser.add_argument("--config", default='configs/model/diffeic.yaml', type=str, help="model config path")
-    
     parser.add_argument("--input", type=str, default='path to input images')
     parser.add_argument("--sampler", type=str, default="ddpm", choices=["ddpm", "ddim"])
     parser.add_argument("--steps", default=50, type=int)
-    
     parser.add_argument("--output", type=str, default='results/')
-    
     parser.add_argument("--seed", type=int, default=231)
     parser.add_argument("--device", type=str, default="cuda", choices=["cpu", "cuda"])
-    
     return parser.parse_args()
 
 
@@ -114,10 +98,8 @@ def main() -> None:
     ckpt_sd = torch.load(args.ckpt_sd, map_location="cpu")['state_dict']
     ckpt_lc = torch.load(args.ckpt_lc, map_location="cpu")['state_dict']
     
-    # load_state_dict(model, state_dict = {'state_dict': ckpt_sd.update(ckpt_lc)}, strict=False)
-    
     ckpt_sd.update(ckpt_lc)
-    load_state_dict(model, state_dict=ckpt_sd, strict=False)
+    load_state_dict(model, ckpt_sd, map_location="cpu")['state_dict'] , strict=False)
     
     # update preprocess model
     model.preprocess_model.update(force=True)
@@ -125,10 +107,13 @@ def main() -> None:
     model.to(args.device)
 
     bpps = []
+    psnr_values = []  # List to store PSNR values
+    dists_values = [] # List of DISTS values 
     
     assert os.path.isdir(args.input)
     
     print(f"sampling {args.steps} steps using {args.sampler} sampler")
+    
     for file_path in list_image_files(args.input, follow_links=True):
         img = Image.open(file_path).convert("RGB")
         x = pad(np.array(img), scale=64)
@@ -155,10 +140,24 @@ def main() -> None:
 
         Image.fromarray(pred).save(save_path)
         print(f"save to {save_path}, bpp {bpp}")
+        
+        # Calculate PSNR for the current image
+        psnr_value = calculate_psnr(np.array(img), pred)  # Compare original image with predicted image
+        psnr_values.append(psnr_value)
+        print(f"PSNR for {file_path}: {psnr_value:.2f} dB")
+        
+        dists_obj = DISTS() 
+        dists_value = dists_obj(img, Image.fromarray(pred))
+        dists_values.append(dists_value)
+        
 
     avg_bpp = sum(bpps) / len(bpps)
+    avg_psnr = np.mean(psnr_values)  # Calculate average PSNR
+    avg_dists = np.mean(dists_values)
+
     print(f'avg bpp: {avg_bpp}')
-            
+    print(f'avg PSNR: {avg_psnr:.2f} dB')
+    print(f'avg DISTS: {avg_dists:.2f}')
 
 if __name__ == "__main__":
     main()
