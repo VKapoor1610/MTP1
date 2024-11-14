@@ -7,10 +7,7 @@ from PIL import Image
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from omegaconf import OmegaConf
 
-from skimage import img_as_float
-from skimage.metrics import niqe
-
-
+# pip install dists-pytorch
 from DISTS_pytorch import DISTS
 from ldm.xformers_state import disable_xformers
 from model.spaced_sampler import SpacedSampler
