@@ -781,8 +781,6 @@ class DiffEIC(LatentDiffusion):
 
         # lpips_loss_function = lpips.LPIPS(net='alex')
         # lpips_loss = lpips_loss_function(model_output[:, :3, :, :], x_noisy[:, :3, :, :])
-        print(lpips_loss.shape)
-        print(loss.shape)
         
         # Unsqueeze the scalar to make it 4D
         lpips_loss_reduced = lpips_loss.mean()  # or use .mean() if you prefer averaging
