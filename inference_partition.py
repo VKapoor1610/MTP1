@@ -156,7 +156,8 @@ def main() -> None:
         pred_tensor = transforms.ToTensor()(Image.fromarray(pred)).unsqueeze(0)  # Add batch dimension
         
         # Pass tensors to DISTS
-        dists_value = dists_obj(img_tensor, pred_tensor)
+        dists_value = dists_obj(img_tensor, pred_tensor).detach().item()
+        print(f"DISTS for {file_path}: {dists_value:.2f}")
         dists_values.append(dists_value)
         
 
