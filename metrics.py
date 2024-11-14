@@ -156,7 +156,8 @@ def main() -> None:
         pred_tensor = transforms.ToTensor()(Image.fromarray(pred)).unsqueeze(0)  # Add batch dimension
         
         # Pass tensors to DISTS
-        dists_value = dists_obj(img_tensor, pred_tensor)
+        dists_value = dists_obj(img_tensor, pred_tensor).detach().item()
+        print(f"PSNR for {file_path}: {dists_value:.2f} dB")
         dists_values.append(dists_value)
         
 
