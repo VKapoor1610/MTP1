@@ -95,11 +95,11 @@ def main() -> None:
         disable_xformers()
 
     model: DiffEIC = instantiate_from_config(OmegaConf.load(args.config))
-    ckpt_sd = torch.load(args.ckpt_sd, map_location="cpu")['state_dict']
-    ckpt_lc = torch.load(args.ckpt_lc, map_location="cpu")['state_dict']
+    #ckpt_sd = torch.load(args.ckpt_sd, map_location="cpu")['state_dict']
+    #ckpt_lc = torch.load(args.ckpt_lc, map_location="cpu")['state_dict']
     
-    ckpt_sd.update(ckpt_lc)
-    load_state_dict(model, state_dict=ckpt_sd, strict=False)
+    #ckpt_sd.update(ckpt_lc)
+    load_state_dict(model, torch.load("/kaggle/input/checkpoint-999/step999.ckpt", map_location="cpu")['state_dict'] , strict=False)
     
     # update preprocess model
     model.preprocess_model.update(force=True)
