@@ -104,7 +104,8 @@ def main() -> None:
     ckpt_lc = torch.load(args.ckpt_lc, map_location="cpu")['state_dict']
     
     ckpt_sd.update(ckpt_lc)
-    load_state_dict(model, ckpt_sd, map_location="cpu")['state_dict'] , strict=False)
+    #load_state_dict(model, ckpt_sd, map_location="cpu")['state_dict'] , strict=False)
+    load_state_dict(model, ckpt_sd, strict=False)
     
     # update preprocess model
     model.preprocess_model.update(force=True)
