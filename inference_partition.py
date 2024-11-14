@@ -4,6 +4,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from argparse import ArgumentParser, Namespace
 
 import numpy as np
+import torchvision.transforms as transforms
 import torch
 import einops
 import pytorch_lightning as pl
@@ -151,7 +152,11 @@ def main() -> None:
         print(f"PSNR for {file_path}: {psnr_value:.2f} dB")
         
         dists_obj = DISTS() 
-        dists_value = dists_obj(img, Image.fromarray(pred))
+        img_tensor = transforms.ToTensor()(img).unsqueeze(0)  # Add batch dimension
+        pred_tensor = transforms.ToTensor()(Image.fromarray(pred)).unsqueeze(0)  # Add batch dimension
+        
+        # Pass tensors to DISTS
+        dists_value = dists_obj(img_tensor, pred_tensor)
         dists_values.append(dists_value)
         
 
