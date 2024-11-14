@@ -10,6 +10,7 @@ import pytorch_lightning as pl
 from PIL import Image
 from skimage.metrics import peak_signal_noise_ratio as psnr
 from omegaconf import OmegaConf
+import torchvision.transforms as transforms
 
 # pip install dists-pytorch
 from DISTS_pytorch import DISTS
@@ -151,7 +152,11 @@ def main() -> None:
         print(f"PSNR for {file_path}: {psnr_value:.2f} dB")
         
         dists_obj = DISTS() 
-        dists_value = dists_obj(img, Image.fromarray(pred))
+        img_tensor = transforms.ToTensor()(img).unsqueeze(0)  # Add batch dimension
+        pred_tensor = transforms.ToTensor()(Image.fromarray(pred)).unsqueeze(0)  # Add batch dimension
+        
+        # Pass tensors to DISTS
+        dists_value = dists_obj(img_tensor, pred_tensor)
         dists_values.append(dists_value)
         
 
